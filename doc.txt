@@ -65,3 +65,6 @@ Rate limiting — what stops someone scripting 10,000 posts a second? This intro
 
 
   to day i learn that how can i start the teminal postgress  with psql -U postgress then  you click \dt it show u the tables  then  you clcick the \c meetthis allow the meeet db to connect with you then write your sql like  CREATE TABLE janctions (id serial primary key, user_id integer reference users(id) , members  intiger refernces group(id),unique(user_id,group))
+
+
+  middleware is somethings  that do some process and say iam finished

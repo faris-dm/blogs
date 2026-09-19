@@ -12,5 +12,5 @@ const port =2019
 
 
 app.listen(port,()=> {
-    console.log(` the server is running at http://localhost:${port}`)
+    console.log(` the server at http://localhost:${port}`)
 })
