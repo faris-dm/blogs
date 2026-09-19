@@ -17,46 +17,46 @@ const generateRefresh = (Refreshpayload) => {
   return jwt.sign(payload, refreshSecret, { expiresIn: "7d" });
 };
 
-app.get("/register", async (req, res) => {
+app.get("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
-      return res.status(400).json("invalid input ,pleases try again");
+      return res.status(400).json("invalid input,pleases try again");
     }
 
-    const EmailCheck = await Pool.query(`SELECT * FROM user WHERE email=$1`, [
-      email.trim(),
+    const EmailCheck = await Pool.query(`SELECT * FROM users WHERE email=$1`, [
+      email
     ]);
     if (EmailCheck.rows.length > 0) {
       return res
-        .status(404)
-        .json("email aready exist,try other  email or login");
+        .status(409)
+        .json("invlaid  inputs");
+        
     }
-    const hashPassword = await bcrypt.haspassword(password, 10);
+    // EMAIL AREADY EXIST  409 CONFILICT WE 
+    const hashPassword = await bcrypt.hash(password, 10);
     const saveNewUser = await Pool.query(
-      `INSERT INTO user (username,email,hashPassword)
-     VALUES ($1,$2,$3) RETURNING user_id,username,email
+      `INSERT INTO users  WHERE (username,email,password_hash) VALUES ($1,$2,$3) RETURNING user_id,username,email
     `,
       [username, email, hashPassword]
     );
     const Result = saveNewUser.rows[0];
 
     const payload = {
-      id: Result.user_id,
+      id: Result.id,
       email: Result.email,
-      role: Result.role,
+    
     };
     const RefreshPayload = {
-      id: Result.user_id,
+      id: Result.id,
     };
 
     let accesTokens = generateAccess(payload);
     let refreshTokens = generateRefresh(RefreshPayload);
 
-    const TokenRefresh = await Pool.query(
-      "INSERT INTO token  WHERE user_id=$1,token=$2",
-      [Result.user_id, refreshTokens]
-    );
+    const databaseTRefesh= new Pool.query(`INSERT  INTO refresh_tokens (user_id,token) VALUES ($1,$2) RETURNING id,user_id,token `,[Result.id,refreshTokens])
+
+    
 
     res.cookie("tokens", accesTokens, {
       httpOnly: true,
@@ -65,7 +65,7 @@ app.get("/register", async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.cookie("refreshToken", refreshSecret, {
+    res.cookie("refreshToken", refreshTokens, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
