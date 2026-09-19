@@ -1,0 +1,67 @@
+ what is  scheme design, it show the flow and process and intraction and relation ship of your database design,
+      like  what table it has how may rows   ,how tables has relation ship with eachother
+
+
+      key question to ask  
+      1:what entites person exist in my system
+         it become like users,post,comments,profiles,
+      2:what inforamtion  will this entittes should have and   will get
+      3:how this entittes reate  wih each other realtion ship
+
+
+
+
+I'm a self-taught full-stack developer (JS, React, Node, Express, Postgres) 
+learning [TOPIC HERE]. I don't want you to just explain it once and move on. 
+I want you to teach me the way a strict, experienced senior developer would 
+mentor a junior — someone who won't let me fake understanding.
+
+Rules for how you respond to me in this conversation:
+
+1. Explain the concept in plain, simple language first — short sentences, 
+   real-world analogies, no jargon without defining it immediately.
+
+2. After explaining, DO NOT just wait for my next question. Ask me a 
+   question that tests whether I actually understood it — not a yes/no 
+   question, but one that makes me explain the reasoning back to you in 
+   my own words.
+
+3. If my answer is vague, wrong, or I just repeat your words back without 
+   understanding — call it out directly and clearly. Don't be harsh for 
+   the sake of it, but don't let me slide either. Tell me exactly what's 
+   missing in my answer before moving on.
+
+4. If I try to skip ahead by asking you to "just give me the code" or 
+   "just tell me the answer," push back and make me attempt it myself 
+   first. Only give me the full answer after I've genuinely tried.
+
+5. Use small, concrete examples over abstract theory. If it's a coding 
+   concept, give me a tiny broken example and ask ME to find what's wrong, 
+   instead of just showing me a correct one.
+
+6. Don't move to the next sub-topic until I've correctly explained the 
+   current one back to you in my own words.
+
+7. Periodically ask me to connect the new concept back to something I 
+   already know, so it's not just memorized in isolation.
+
+Start by explaining [TOPIC HERE] at a beginner level, then quiz me.
+
+
+project
+
+
+— a small community feed app
+
+The pitch (keep it simple on purpose): Users sign up, follow other users, post short text/image posts, like and comment on posts, and see a feed of posts from people they follow. Think a stripped-down Twitter/Instagram feed — no need for stories, DMs, or algorithms. The simplicity of the idea is intentional — I don't want you burning time on scope, I want you burning time on getting the hard parts right.
+
+Why this project, specifically — the hard parts hiding inside it
+The feed query itself — "show me posts from people I follow, newest first, paginated" is a deceptively hard SQL problem once you have real data volume. This forces you to actually think about indexes, N+1 query bugs, and pagination — the stuff that makes apps "feel slow" in real life.
+Likes — this is a race condition disguised as a checkbox. Two rapid clicks on "like" (sound familiar?) can create duplicate likes if you don't design the database correctly. Same disease as the duplicate order bug, different symptom.
+Follow/unfollow — ownership and authorization again: can I unfollow someone on your behalf by guessing IDs? Can I see a private account's posts by hitting the API directly, bypassing your UI's "follow to see posts" logic?
+Comments and posts — full CRUD with the ownership rule baked in: can only the author edit or delete their own post/comment. You will 100% mess this up at least once, and that's fine — that's the point.
+Rate limiting — what stops someone scripting 10,000 posts a second? This introduces you to a concept we haven't touched yet, and it's a real production concern.
+
+
+
+  to day i learn that how can i start the teminal postgress  with psql -U postgress then  you click \dt it show u the tables  then  you clcick the \c meetthis allow the meeet db to connect with you then write your sql like  CREATE TABLE janctions (id serial primary key, user_id integer reference users(id) , members  intiger refernces group(id),unique(user_id,group))
