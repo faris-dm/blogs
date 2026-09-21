@@ -6,15 +6,20 @@
 
 
 
+
 function middleWare(req,res,next) {
     const { token}= req.cookies
      if(!token) {
-        return res.status(401).json(" token does not exits")
+      return res
+        .status(401)
+        .json({ success: false, message: "Token does not exist" });
      }
 
      jwt.verify(token,process.env.AccessSecret, (err,decoded)=> {
         if(err) {
-            return res.status(403).json("token does not much ")
+return res
+  .status(403)
+  .json({ success: false, message: "Invalid or expired token" });
         }
         req.user=decoded
             next()
@@ -24,3 +29,6 @@ function middleWare(req,res,next) {
  
     
 }
+
+
+export default middleWare
