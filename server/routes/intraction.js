@@ -105,19 +105,19 @@ router.put("/posts/:id/comments/edit", Auth, async (req, res) => {
 });
 router.delete("/posts/:id/comments/:ids", Auth, async (req, res) => {
   try {
-    const { id } = req.params;
+    
     const {ids} =req.params
     const userId = req.user.id;
 
      const GetPostid = await Pool.query(
        ` SELECT *  FROM  comments  WHERE post_id=$1 `,
-       [id]
+       [ids]
      );
      const rows = GetPostid.rows.length;
      if (rows === 0) {
        return res.status(404).json({
          success: "false",
-         message: `there is no comments under post id ${id} id`,
+         message: `there is no comments under post id ${ids} id`,
        });
      }
 
@@ -170,6 +170,11 @@ router.post("/follow/:id", Auth, async (req, res) => {
     const { followed_user } = req.params;
     const follower = req.user.id;
 
+
+
+    if(followUser === follower) {
+        return res.status(400).json({success:false,message:"invalid request"})
+    }
     const CheckUserExist = await Pool.query(
       `
           SELECT * FROM posts WHERE  user_id=$1
@@ -235,5 +240,107 @@ router.delete("/followed/:id", Auth, async (req, res) => {
     return res.status(500).json("Intrnal server error");
   }
 });
+
+
+router.get("/post/:id/like", async (req,res)=> {
+   try {
+     const { id } = req.params;
+
+     if (isNaN(id)) {
+       return res.status(400).json({
+         success: false,
+         message: "invalid post id",
+       });
+     }
+
+     const GetAllLikes = await Pool.query(`
+       SELECT * FROM likes WHERE post_id=$1 
+        `,[id]);
+
+
+          const rows = GetAllLikes.rows.length;
+          if (rows === 0) {
+            return res.status(404).json({
+              success: "false",
+              message: `there is no likes under this post`,
+            });
+          }
+          return res.status(200).json({
+            success: true,
+            data: GetAllLikes.rows,
+          });
+   } catch (error) {
+     console.error(error);
+     return res.status(500).json("Intrnal Server error");
+   }
+})
+
+
+
+router.post("/post/:id/like", Auth , async (req,res)=> {
+    try {
+   const {postId}=req.params
+   const UserId=req.user.id
+ if (isNaN(postId)) {
+   return res.status(400).json("Please insert valid id");
+ }
+
+ const AddLike = await Pool.query(
+   `
+     INSERT INTO likes (user_id,post_id) VALUES ($1,$2) RETURNING *
+    `,
+   [UserId, postId]
+ );
+
+   if (AddLike.rows.length === 0) {
+     return res
+       .status(404)
+       .json({ success: false, message: "post does not  exist" });
+   }
+   return res.status(200).json({
+     success: true,
+     message: "like added successfully",
+     data: AddLike.rows[0],
+   });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json("Intrnal Server error");
+    }
+} )
+
+router.delete("/post/:id/like",Auth,async (req,res)=> {
+    try {
+
+const {postId}=req.params
+const {userId}=req.user.id
+const deleteLike=await Pool.query(`
+     DELETE  FROM likes WHERE user_id=$1 AND post_id=$2
+    `,[userId,postId])
+
+
+     const Rows = deleteLike.rows.length;
+     if (Rows === 0) {
+       return res.status(404).json({
+         success: false,
+         message: `there is no like  with in this post `,
+       });
+     }
+     return res.status(200).json({
+       success: true,
+       message: "like deleted succefully",
+       data: deleteLike.rows[0],
+     });
+
+
+    } catch (error) {
+      console.error("Fetch  single Orders Error:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+})
+
+
 
 export default router;
