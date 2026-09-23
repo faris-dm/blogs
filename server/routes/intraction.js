@@ -49,22 +49,27 @@ router.post("/posts/:id/comments", Auth, async (req, res) => {
       return res.status(400).json("Please insert valid id");
     }
 
+    const checkPostExist = await Pool.query(
+      ` SELECT content FROM posts WHERE id=$1`,
+      [id]
+    );
+
+    if (checkPostExist.rows.length === 0) {
+      return res.status(400).json({ success: false, message: " post does not exits" });
+    }
+
     const addComment = await Pool.query(
       `INSERT INTO comments (post_id,content,user_id) VALUES ($1,$2,$3) RETURNING *`,
       [id, content, userId]
     );
-    if (addComment.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "comment does not  exist" });
-    }
+
     return res.status(200).json({
       success: true,
       message: "comment added successfully",
       data: addComment.rows[0],
     });
   } catch (error) {
-    console.error("Fetch  single Orders Error:", error);
+    console.error("Fetch single Orders Error:", error);
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
@@ -77,7 +82,7 @@ router.put("/posts/:id/comments/edit", Auth, async (req, res) => {
   try {
     const { id } = req.params;
     const UserId = req.user.id;
-    const content = req.body;
+    const { content } = req.body;
     if (content === "") {
       return res
         .status(400)
@@ -105,21 +110,20 @@ router.put("/posts/:id/comments/edit", Auth, async (req, res) => {
 });
 router.delete("/posts/:id/comments/:ids", Auth, async (req, res) => {
   try {
-    
-    const {ids} =req.params
+    const { ids } = req.params;
     const userId = req.user.id;
 
-     const GetPostid = await Pool.query(
-       ` SELECT *  FROM  comments  WHERE post_id=$1 `,
-       [ids]
-     );
-     const rows = GetPostid.rows.length;
-     if (rows === 0) {
-       return res.status(404).json({
-         success: "false",
-         message: `there is no comments under post id ${ids} id`,
-       });
-     }
+    const GetPostid = await Pool.query(
+      ` SELECT *  FROM  comments  WHERE post_id=$1 `,
+      [ids]
+    );
+    const rows = GetPostid.rows.length;
+    if (rows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `there is no comments under post id ${ids} id`,
+      });
+    }
 
     const DeleteComment = await Pool.query(
       `DELETE FROM comments WHERE id=$1 AND user_id=$2  RETURNING *`,
@@ -129,7 +133,7 @@ router.delete("/posts/:id/comments/:ids", Auth, async (req, res) => {
     if (Rows === 0) {
       return res.status(404).json({
         success: false,
-        message: `there is no comments  with ${id}  `,
+        message: `there is no comments  with ${ids}  `,
       });
     }
     return res.status(200).json({
@@ -152,7 +156,7 @@ router.get("/allFollowers", async (req, res) => {
     if (GetAllFolloer.rows.length === 0) {
       return res.status(200).json({
         success: true,
-        messsage: "there is no follower avaliable for now",
+        message: "there is no follower avaliable for now",
       });
     }
     return res.status(200).json({
@@ -165,19 +169,18 @@ router.get("/allFollowers", async (req, res) => {
   }
 });
 
-router.post("/follow/:id", Auth, async (req, res) => {
+router.post("/follow/:followed_user", Auth, async (req, res) => {
   try {
     const { followed_user } = req.params;
     const follower = req.user.id;
-
-
-
-    if(followUser === follower) {
-        return res.status(400).json({success:false,message:"invalid request"})
+    if (followed_user === follower) {
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid request" });
     }
     const CheckUserExist = await Pool.query(
       `
-          SELECT * FROM posts WHERE  user_id=$1
+          SELECT * FROM users WHERE  id=$1
           `,
       [followed_user]
     );
@@ -201,6 +204,12 @@ router.post("/follow/:id", Auth, async (req, res) => {
         .status(404)
         .json({ success: false, message: "user account does not  exist" });
     }
+
+    // if (followed_user === follower) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "invalid request" });
+    // }
     return res.status(200).json({
       success: true,
       message: "you are  following this account  successfully",
@@ -212,13 +221,13 @@ router.post("/follow/:id", Auth, async (req, res) => {
   }
 });
 
-router.delete("/followed/:id", Auth, async (req, res) => {
+router.delete("/unfollow/:followedUser", Auth, async (req, res) => {
   try {
     const { followedUser } = req.params;
     const follower = req.user.id;
     const Unfollow = await Pool.query(
       `
-     DELETE  FROM follows WHERE followed_id=$1 AND  followed_id=$2 RETURNING * 
+     DELETE  FROM follows WHERE followed_id=$1 AND  follower_id=$2 RETURNING * 
     `,
       [followedUser, follower]
     );
@@ -241,106 +250,132 @@ router.delete("/followed/:id", Auth, async (req, res) => {
   }
 });
 
+router.get("/post/:id/like", async (req, res) => {
+  try {
+    const { id } = req.params;
 
-router.get("/post/:id/like", async (req,res)=> {
-   try {
-     const { id } = req.params;
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "invalid post id",
+      });
+    }
 
-     if (isNaN(id)) {
-       return res.status(400).json({
-         success: false,
-         message: "invalid post id",
-       });
-     }
-
-     const GetAllLikes = await Pool.query(`
+    const GetAllLikes = await Pool.query(
+      `
        SELECT * FROM likes WHERE post_id=$1 
-        `,[id]);
+        `,
+      [id]
+    );
 
+    const rows = GetAllLikes.rows.length;
+    if (rows === 0) {
+      return res.status(200).json({
+        success: true,
+        message: `there is no likes under this post`,
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: GetAllLikes.rows,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json("Intrnal Server error");
+  }
+});
 
-          const rows = GetAllLikes.rows.length;
-          if (rows === 0) {
-            return res.status(404).json({
-              success: "false",
-              message: `there is no likes under this post`,
-            });
-          }
-          return res.status(200).json({
-            success: true,
-            data: GetAllLikes.rows,
-          });
-   } catch (error) {
-     console.error(error);
-     return res.status(500).json("Intrnal Server error");
-   }
-})
+router.post("/post/:postId/like", Auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const UserId = req.user.id;
+    if (isNaN(postId)) {
+      return res.status(400).json("Please insert valid id");
+    }
 
-
-
-router.post("/post/:id/like", Auth , async (req,res)=> {
-    try {
-   const {postId}=req.params
-   const UserId=req.user.id
- if (isNaN(postId)) {
-   return res.status(400).json("Please insert valid id");
- }
-
- const AddLike = await Pool.query(
-   `
+    const AddLike = await Pool.query(
+      `
      INSERT INTO likes (user_id,post_id) VALUES ($1,$2) RETURNING *
     `,
-   [UserId, postId]
- );
+      [UserId, postId]
+    );
 
-   if (AddLike.rows.length === 0) {
-     return res
-       .status(404)
-       .json({ success: false, message: "post does not  exist" });
-   }
-   return res.status(200).json({
-     success: true,
-     message: "like added successfully",
-     data: AddLike.rows[0],
-   });
+    return res.status(200).json({
+      success: true,
+      message: "like added successfully",
+      data: AddLike.rows[0],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json("Intrnal Server error");
+  }
+});
 
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json("Intrnal Server error");
-    }
-} )
-
-router.delete("/post/:id/like",Auth,async (req,res)=> {
-    try {
-
-const {postId}=req.params
-const {userId}=req.user.id
-const deleteLike=await Pool.query(`
+router.delete("/post/:postId/like", Auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.id;
+    const deleteLike = await Pool.query(
+      `
      DELETE  FROM likes WHERE user_id=$1 AND post_id=$2
-    `,[userId,postId])
+   RETURNING * `,
+      [userId, postId]
+    );
+
+    const Rows = deleteLike.rows.length;
+    if (Rows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `there is no like  with in this post `,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "like deleted succefully",
+      data: deleteLike.rows[0],
+    });
+  } catch (error) {
+    console.error("Fetch  single Orders Error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+});
+// @import "tailwindcss";
 
 
-     const Rows = deleteLike.rows.length;
-     if (Rows === 0) {
-       return res.status(404).json({
-         success: false,
-         message: `there is no like  with in this post `,
-       });
-     }
+// feed need some fix
+router.get("/feed", Auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const selectJoinTable = await Pool.query(`
+          SELECT posts.user_id,posts.content,posts.created_at,posts.updated_at,follows.follower_id,follows.followed_id,users.username,users.images
+          FROM posts
+          JOIN follows
+          ON posts.user_id=follows.followed_id
+          JOIN users ON users.id=posts.user_id
+          WHERE follows.follower_id=$1
+          ORDER BY posts.created_at DESC
+        `,
+      [userId]
+    );
+
+    if(selectJoinTable.rows.length===0) {
+        return res.status(200).json({success:true,message:"no post from ur followers"})
+    }
      return res.status(200).json({
        success: true,
-       message: "like deleted succefully",
-       data: deleteLike.rows[0],
+       message: "done showing your feed",
+       data: selectJoinTable.rows,
      });
 
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json("Intrnal Server error");
+  }
 
-    } catch (error) {
-      console.error("Fetch  single Orders Error:", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    }
-})
-
-
+ 
+});
 
 export default router;
