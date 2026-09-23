@@ -14,12 +14,7 @@ router.get("/posts", async (req, res) => {
       ` SELECT *  FROM  posts  ORDER BY id DESC`
     );
 
-    if (GetPost.rows.length === 0) {
-      return res.status(200).json({
-        success: false,
-        messsage: "there is no post avaliable for now",
-      });
-    }
+  
     return res.status(200).json({
       success: true,
       data: GetPost.rows,
@@ -91,7 +86,7 @@ router.post("/posted", Auth, async (req, res) => {
 
 
 
-router.put("/post/:id/edit", Auth, async (req,res)=> {
+router.put("/posts/:id/edit", Auth, async (req,res)=> {
   try {
 const {id}=req.params
 const UserId=req.user.id
@@ -132,7 +127,7 @@ const existPost = EditPost
 
 })
 
-router.delete("/post/:id/delete", Auth,async (req,res)=> {
+router.delete("/posts/:id", Auth,async (req,res)=> {
  try {
   const UserId=req.user.id
   const {id}=req.params
