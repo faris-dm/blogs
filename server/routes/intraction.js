@@ -349,14 +349,13 @@ router.delete("/post/:postId/like", Auth, async (req, res) => {
 router.get("/feed", Auth, async (req, res) => {
   try {
     const userId = req.user.id;
-    const selectJoinTable = await Pool.query(`
-          SELECT posts.user_id,posts.content,posts.created_at,posts.updated_at,follows.follower_id,follows.followed_id,users.username,users.images
-          FROM posts
-          JOIN follows
-          ON posts.user_id=follows.followed_id
-          JOIN users ON users.id=posts.user_id
-          WHERE follows.follower_id=$1
-          ORDER BY posts.created_at DESC
+    const selectJoinTable = await Pool.query(
+      `
+   SELECT posts.id, posts.user_id, posts.content, posts.created_at, posts.updated_at, users.username, users.images
+FROM posts
+JOIN follows ON posts.user_id = follows.followed_id
+JOIN users ON users.id = posts.user_id
+WHERE follows.follower_id = $
         `,
       [userId]
     );

@@ -4,6 +4,9 @@ import Pool from "../config/db.js";
 const router = express.Router();
 import Auth from "../middle/auth.js";
 
+
+// https://www.figma.com/design/lfsyFcSWTDvObI8act3F2Y/Quilog-The-bloging-website--Community-?node-id=0-1&p=f&t=rSf09e4YIkRVX9Ph-0
+// https://www.figma.com/design/lfsyFcSWTDvObI8act3F2Y/Quilog-The-bloging-website--Community-?node-id=0-1&p=f&t=rSf09e4YIkRVX9Ph-0
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
