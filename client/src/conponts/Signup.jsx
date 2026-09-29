@@ -1,472 +1,537 @@
-// import react ,{useState} from "react";
-
-// import Icons from "../assets/icons.svg";
-// function Signup() {
-//   return (
-//     <div>
-//       {/* <main
-//         className="
-//     min-h-full w-full
-//     px-4 pb-1 pt-8
-//     sm:px-6 sm:pt-9
-//     md:px-10 md:pt-10
-//     lg:px-20 lg:pt-1"
-//       >
-//         <div
-//           className="raper mx-auto flex w-full max-w-6xl flex-col gap-5 pb-4 mt-1 sm:block sm:mt-2 md:mt-3
-//   md:flex-row md:items-center md:gap-7 lg:gap-10"
-//         >
-//           <div className="forms flex w-full max-w-sm flex-col  md:w-[40%] md:max-w-xs"></div>
-//           <div
-//             className=" sm:w-
-//     flex min-h-[60px] flex-1
-//     items-center justify-center
-//     rounded-3xl border border-gray-200
-//     p-6
-//     sm:p-8
-//     md:min-h-[320px]
-//     lg:min-h-[100px]
-//   "
-//           >
-//             <img
-//               src={Icons}
-//               alt="Icons"
-//               className="sm:w-[0px] md:w-[500px] lg:w-[700px]  max-w-none"
-//             />
-//           </div>
-// </div>
-//       </main> */}
-//     </div>
-//   );
-// }
-
-// export default Signup;
-import Icons from "../assets/icons.svg";
-
 import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import Icons from "../assets/icons.svg";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
-function Field({ label, id, value, defaultValue, onChange, ...props }) {
-  const [focused, setFocused] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [internalValue, setInternalValue] = useState(defaultValue || "");
+// --------------------------------------------------
+// MOCK API
+// Replace this later with your real backend request
+// --------------------------------------------------
 
-  const isControlled = value !== undefined;
-  const currentValue = isControlled ? value : internalValue;
-  const hasValue = String(currentValue ?? "").length > 0;
-  const floated = focused || hovered || hasValue;
+async function loginRequest(data) {
+  const res = await fetch("http://localhost:2019/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // required so the browser stores the cookies your backend sets
+    body: JSON.stringify(data),
+  });
 
-  const handleChange = (e) => {
-    if (!isControlled) setInternalValue(e.target.value);
-    onChange?.(e);
-  };
+  const json = await res.json();
 
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <input
-        id={id}
-        value={isControlled ? value : internalValue}
-        onChange={handleChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        {...props}
-        className="w-full border-b px-4 pt-7 pb-3 text-base text-neutral-700  transition-colors focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
-      />
-      <label
-        htmlFor={id}
-        className={`absolute left-4 transition-all duration-150 pointer-events-none ${
-          floated
-            ? "top-2.5 translate-y-0 text-xs text-neutral-500"
-            : "top-1/2 -translate-y-1/2 text-base text-neutral-400"
-        }`}
-      >
-        {label}
-      </label>
-    </div>
-  );
+  if (!res.ok) {
+    // your backend sends plain strings on error, e.g. "incorrect inputs "
+    throw new Error(typeof json === "string" ? json : "Login failed");
+  }
+
+  return json; // { success, message, user }
 }
 
-function PasswordField({ label, id, value, defaultValue, onChange, ...props }) {
-  const [visible, setVisible] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [internalValue, setInternalValue] = useState(defaultValue || "");
+async function Register(data) {
+  const Response = await fetch(`http://localhost:2019/api/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
 
-  const isControlled = value !== undefined;
-  const currentValue = isControlled ? value : internalValue;
-  const hasValue = String(currentValue ?? "").length > 0;
-  const floated = focused || hovered || hasValue;
+  const json = await Response.json();
 
-  const handleChange = (e) => {
-    if (!isControlled) setInternalValue(e.target.value);
-    onChange?.(e);
-  };
+  if (!Response.ok) {
+    throw new Error(typeof json === "string" ? json : "Registration failed");
+  }
 
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <input
-        id={id}
-        value={isControlled ? value : internalValue}
-        onChange={handleChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        {...props}
-        type={visible ? "text" : "password"}
-        className="w-full  px-4 pt-7 pb-3 pr-12 text-base text-neutral-700 outline-none   focus:ring-1 focus:ring-neutral-900"
-      />
-      <label
-        htmlFor={id}
-        className={`absolute left-4 transition-all duration-150 pointer-events-none ${
-          floated
-            ? "top-2.5 translate-y-0 text-xs text-neutral-500"
-            : "top-1/2 -translate-y-1/2 text-base text-neutral-400"
-        }`}
-      >
-        {label}
-      </label>
-      <button
-        type="button"
-        onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? "Hide password" : "Show password"}
-        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors"
-      >
-        {visible ? (
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-            <line x1="1" y1="1" x2="23" y2="23" />
-          </svg>
-        ) : (
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-        )}
-      </button>
-    </div>
-  );
+  return json;
 }
 
-function LoginForm() {
-  //   const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-    setError(null);
-
-    const email = e.target.email.value;
-
-    const loginData = {
-      email: email,
-      password: password,
-    };
-
-    try {
-      const response = await fetch("http://localhost:2300/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // ← add this to both login and regi
-        body: JSON.stringify(loginData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Invalid email or password.");
-      }
-
-      const result = await response.json();
-      console.log("Login success:", result);
-      // redirect, save token, etc. — next step
-
-      if (result.user.role === "admin") {
-        navigate("/admin");
-        return;
-      }
-      navigate("/products");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <Field
-        id="login-email"
-        name="email"
-        label="Email"
-        type="email"
-        required
-      />
-      <PasswordField
-        id="login-password"
-        label="Password"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-b-2 border-neutral-300 accent-neutral-900"
-          />
-          <span className="text-sm text-neutral-600">Remember me</span>
-        </label>
-
-        <a
-          href="#"
-          className="text-sm font-medium text-neutral-600 hover:text-neutral-900 underline underline-offset-2"
-        >
-          Forgot password?
-        </a>
-      </div>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-md bg-neutral-400 text-white text-base font-semibold tracking-widest uppercase py-4 hover:bg-neutral-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-      >
-        {isSubmitting && (
-          <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-        )}
-        {isSubmitting ? "Signing In..." : "Sign In"}
-      </button>
-    </form>
-  );
-}
-
-function RegisterForm() {
-  //   const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const passwordsMatch =
-    confirmPassword.length === 0 || password === confirmPassword;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!agreed || !passwordsMatch || isSubmitting) return;
-
-    setIsSubmitting(true);
-    setError(null);
-
-    const username = e.target.username.value;
-    const email = e.target.email.value;
-
-    const userData = {
-      username: username,
-      email: email,
-      password: password,
-    };
-
-    try {
-      const response = await fetch("http://localhost:2300/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // ← add this to both login and register fetch calls
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Registration failed. Try again.");
-      }
-
-      const result = await response.json();
-      console.log("Success:", result);
-
-      navigate("/products");
-
-      // redirect, show success message, whatever you want next
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <Field
-        id="register-username"
-        name="username"
-        label="Username"
-        type="text"
-        required
-      />
-      <Field
-        id="register-email"
-        name="email"
-        label="Email"
-        type="email"
-        required
-      />
-
-      <PasswordField
-        id="register-password"
-        label="Password"
-        minLength={8}
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <div>
-        <PasswordField
-          id="register-confirm-password"
-          label="Confirm Password"
-          required
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        {!passwordsMatch && (
-          <p className="mt-2 text-sm text-red-600">Passwords do not match.</p>
-        )}
-      </div>
-
-      <label className="flex items-start gap-2">
-        <input
-          type="checkbox"
-          checked={agreed}
-          onChange={() => setAgreed((a) => !a)}
-          className="h-4 w-4 mt-0.5 rounded border-neutral-300 accent-neutral-900"
-        />
-        <span className="text-sm text-neutral-600">
-          I agree to the Terms of Service and Privacy Policy
-        </span>
-      </label>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <button
-        type="submit"
-        disabled={!agreed || !passwordsMatch || isSubmitting}
-        className="w-full rounded-md bg-neutral-900 text-white text-base font-semibold tracking-widest uppercase py-4 transition-colors hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-      >
-        {isSubmitting && (
-          <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-        )}
-        {isSubmitting ? "Creating Account..." : "Create Account"}
-      </button>
-    </form>
-  );
-}
+// --------------------------------------------------
+// AUTH PAGE
+// --------------------------------------------------
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
+  const Location = useLocation();
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+
   const isLogin = mode === "login";
 
-  //   min-h-screen w-full flex bg-neutral-50 text-neutral-900
+  // Form state
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // --------------------------------------------------
+  // INPUT CHANGE
+  // --------------------------------------------------
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  // --------------------------------------------------
+  // FORM SUBMIT
+  // --------------------------------------------------
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    setError("");
+
+    // Basic register validation
+    if (!isLogin) {
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+
+      if (formData.password.length < 8) {
+        setError("Password must be at least 8 characters.");
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const loginData = {
+          email: formData.email,
+          password: formData.password,
+        };
+        const result = await loginRequest(loginData);
+        setUser(result.user);
+        console.log(result);
+        navigate(Location.state?.from || "/post", { replace: true });
+      } else {
+        // Data that will eventually go to your register API
+        const registerData = {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        };
+
+        const result = await Register(registerData);
+
+        console.log(result);
+        setUser(result.user);
+
+        navigate(Location.state?.from || "/post", { replace: true });
+      }
+
+      // Clear form after successful request
+      setFormData({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // --------------------------------------------------
+  // SWITCH LOGIN / REGISTER
+  // --------------------------------------------------
+
+  function switchMode() {
+    setMode(isLogin ? "register" : "login");
+
+    setError("");
+
+    setFormData({
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+  }
+
   return (
-    //
-    <div
-      className="mx-auto flex w-full max-w-6xl flex-col gap-12 pb-4 mt-1 sm:mt-2 md:mt-3
-  md:flex-row md:items-center md:gap-6 lg:gap-10"
-    >
-      {/* <BrandPanel /> */}
-
-      <div className=" bg-[#fef]  rounded-2xl flex items-center justify-center px-6 sm:px-10 py-10 lg:w-[600px]">
-        <div className="w-full max-w-lg   ">
-          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight mb-2">
-            {isLogin ? "Sign In" : "Create Account"}
-          </h1>
-          {isLogin && (
-            <p className="text-base text-neutral-500 mb-9">Welcome back</p>
-          )}
-          {!isLogin && <div className="mb-7" />}
-
-          {isLogin ? <LoginForm /> : <RegisterForm />}
-
-          <p className="mt-7 text-center text-base text-neutral-600">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => setMode(isLogin ? "register" : "login")}
-              className="font-semibold text-neutral-900 underline underline-offset-2 hover:text-neutral-700"
-            >
-              {isLogin ? "Register" : "Sign In"}
-            </button>
-          </p>
-        </div>
-      </div>
-
+    <main className="min-h-screen pt-20 sm:pt-24  w-full  px-4 py-6 sm:px-6 sm:py-8 md:px-10 lg:px-20">
       <div
-        className=" sm:w-
-    flex min-h-[60px] flex-1
-    items-center justify-center
-    rounded-3xl border border-gray-200
-    p-6
-    sm:p-8
-    md:min-h-[320px]
-    lg:min-h-[100px]
-  "
+        className="
+        
+          mx-auto
+          flex
+          w-full
+          max-w-6xl
+          flex-col
+          gap-8
+          bg-white
+ rounded-xl
+          md:flex-row
+          md:items-center
+          md:gap-8
+
+          lg:gap-10
+        "
       >
-        <div>
-          <h3
-            className="max-w-2xl
-      lg:h-10
-      text-center
-      font-poppins
-      text-2xl
-      font-semibold
-      leading-[1.3]
-      tracking-[-0.05em]
-      text-black
-      sm:text-4xl
-      md:text-5xl
-      lg:text-6xl
-      xl:text-7xl"
-          >
-            Let's Blog it
-          </h3>
-          <img
-            src={Icons}
-            alt="Icons"
-            className="mt-5 sm:w-[0px] md:w-[500px] lg:w-[500px]  max-w-none"
-          />
-        </div>
+        {/* =========================================
+            FORM
+        ========================================= */}
+
+        <section
+          className="
+            flex
+            w-full
+            items-center
+            justify-center
+            py-6
+
+            sm:py-8
+
+            md:w-1/2
+            md:py-10
+          "
+        >
+          <div className="w-full max-w-md">
+            {/* TITLE */}
+
+            <div className="mb-8">
+              <h1
+                className="
+                  text-3xl
+                  font-black
+                  uppercase
+                  tracking-tight
+                  text-neutral-900
+
+                  sm:text-4xl
+                "
+              >
+                {isLogin ? "Sign In" : "Create Account"}
+              </h1>
+
+              {isLogin ? (
+                <p className="mt-2 text-sm text-neutral-500 sm:text-base">
+                  Welcome back
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-neutral-500 sm:text-base">
+                  Create your account
+                </p>
+              )}
+            </div>
+
+            {/* FORM */}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* USERNAME - REGISTER ONLY */}
+
+              {!isLogin && (
+                <div>
+                  <label
+                    htmlFor="username"
+                    className="mb-2 block text-sm font-medium text-neutral-700"
+                  >
+                    Username
+                  </label>
+
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your username"
+                    className="
+                      w-full
+                      rounded-md
+                      border
+                      border-neutral-300
+                      bg-white
+                      px-4
+                      py-3
+                      text-sm
+                      text-neutral-900
+                      outline-none
+                      transition
+                      placeholder:text-neutral-400
+                      focus:border-neutral-900
+                      focus:ring-1
+                      focus:ring-neutral-900
+                    "
+                  />
+                </div>
+              )}
+
+              {/* EMAIL */}
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-medium text-neutral-700"
+                >
+                  Email
+                </label>
+
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your email"
+                  className="
+                    w-full
+                    rounded-md
+                    border
+                    border-neutral-300
+                    bg-white
+                    px-4
+                    py-3
+                    text-sm
+                    text-neutral-900
+                    outline-none
+                    transition
+                    placeholder:text-neutral-400
+                    focus:border-neutral-900
+                    focus:ring-1
+                    focus:ring-neutral-900
+                  "
+                />
+              </div>
+
+              {/* PASSWORD */}
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-sm font-medium text-neutral-700"
+                >
+                  Password
+                </label>
+
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your password"
+                  className="
+                    w-full
+                    rounded-md
+                    border
+                    border-neutral-300
+                    bg-white
+                    px-4
+                    py-3
+                    text-sm
+                    text-neutral-900
+                    outline-none
+                    transition
+                    placeholder:text-neutral-400
+                    focus:border-neutral-900
+                    focus:ring-1
+                    focus:ring-neutral-900
+                  "
+                />
+              </div>
+
+              {/* CONFIRM PASSWORD */}
+
+              {!isLogin && (
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="mb-2 block text-sm font-medium text-neutral-700"
+                  >
+                    Confirm Password
+                  </label>
+
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    placeholder="Confirm your password"
+                    className="
+                      w-full
+                      rounded-md
+                      border
+                      border-neutral-300
+                      bg-white
+                      px-4
+                      py-3
+                      text-sm
+                      text-neutral-900
+                      outline-none
+                      transition
+                      placeholder:text-neutral-400
+                      focus:border-neutral-900
+                      focus:ring-1
+                      focus:ring-neutral-900
+                    "
+                  />
+                </div>
+              )}
+
+              {/* LOGIN OPTIONS */}
+
+              {isLogin && (
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-neutral-900"
+                    />
+
+                    <span className="text-xs text-neutral-600 sm:text-sm">
+                      Remember me
+                    </span>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="
+                      text-xs
+                      font-medium
+                      text-neutral-600
+                      underline
+                      underline-offset-2
+                      hover:text-neutral-900
+
+                      sm:text-sm
+                    "
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+
+              {/* ERROR */}
+
+              {error && <p className="text-sm text-red-600">{error}</p>}
+
+              {/* SUBMIT */}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="
+                  w-full
+                  rounded-md
+                  bg-neutral-900
+                  px-4
+                  py-3.5
+                  text-sm
+                  font-semibold
+                  uppercase
+                  tracking-widest
+                  text-white
+                  transition
+                  hover:bg-neutral-800
+                  active:scale-[0.99]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-50
+
+                  sm:py-4
+                "
+              >
+                {loading
+                  ? isLogin
+                    ? "Signing In..."
+                    : "Creating Account..."
+                  : isLogin
+                  ? "Sign In"
+                  : "Create Account"}
+              </button>
+            </form>
+
+            {/* SWITCH LOGIN / REGISTER */}
+
+            <p className="mt-7 text-center text-sm text-neutral-600 sm:text-base">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+              <button
+                type="button"
+                onClick={switchMode}
+                className="
+                  font-semibold
+                  text-neutral-900
+                  underline
+                  underline-offset-2
+                  hover:text-neutral-600
+                "
+              >
+                {isLogin ? "Register" : "Sign In"}
+              </button>
+            </p>
+          </div>
+        </section>
+
+        {/* =========================================
+            SVG / DESIGN
+            Hidden on mobile
+        ========================================= */}
+
+        <section
+          className="
+            hidden
+
+            md:flex
+            md:min-h-[320px]
+            md:flex-1
+            md:items-center
+            md:justify-center
+            md:rounded-3xl
+            md:border
+            md:border-gray-200
+            md:p-6
+
+            lg:p-8
+          "
+        >
+          <div className="w-full text-center">
+            <h2
+              className="
+                font-poppins
+                text-4xl
+                font-semibold
+                leading-[1.3]
+                tracking-[-0.05em]
+                text-black
+
+                lg:text-5xl
+              "
+            >
+              Let's Blog it
+            </h2>
+
+            <img
+              src={Icons}
+              alt="Blog illustration"
+              className="
+                mx-auto
+                mt-6
+                h-auto
+                w-full
+                max-w-[500px]
+                object-contain
+              "
+            />
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
