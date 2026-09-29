@@ -8,6 +8,12 @@ import Pool from "../config/db.js";
 router.use(express.urlencoded({ extended: true }));
 router.use(cookieParser());
 router.use(express.json());
+import auth from "../middle/auth.js"
+
+router.get("/me", auth, (req, res) => {
+  return res.status(200).json({ success: true, user: req.user });
+});
+
 
 const secret = process.env.AccessSecret;
 const refreshSecret = process.env.refreshSecret;
