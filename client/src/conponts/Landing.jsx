@@ -1,12 +1,27 @@
 import Icons from "../assets/icons.svg";
+import Navbar from "./Navbar";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 export default function Landing() {
+  const { user, checkingAuth } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCreateClick = () => {
+    if (checkingAuth) return; // /me hasn't answered yet
+    if (!user) {
+      navigate("/signup"); // guest -> signup
+      return;
+    }
+    navigate("/post"); // logged in -> post page
+  };
+
   return (
     <main
-      className="
+      className="pt-20 sm:pt-24
     min-h-full w-full
-    px-4 pb-1 pt-8
-    sm:px-6 sm:pt-9
+    px-4 pb-1 lg:pt-25 md:pt-22
+    sm:px-6 
     md:px-10 md:pt-10
     lg:px-20 lg:pt-1
   "
@@ -58,6 +73,7 @@ export default function Landing() {
               hover:shadow-lg
               active:scale-[0.98] mb-5
             "
+            onClick={() => handleCreateClick()}
           >
             <span className="text-2xl font-light leading-none transition-transform duration-300 group-hover:rotate-90">
               {" "}
@@ -70,6 +86,7 @@ export default function Landing() {
 
           {/* Read Blog */}
           <button
+            onClick={() => navigate("/post")}
             className="
               group flex w-70 items-center gap-5
               rounded-2xl border border-gray-300
@@ -79,7 +96,7 @@ export default function Landing() {
               hover:-translate-y-1
               hover:bg-gray-100
               hover:shadow-lg
-              active:scale-[0]
+              active:scale-[0.98]
             "
           >
             <span className="flex items-center gap-5">
@@ -106,16 +123,31 @@ export default function Landing() {
         {/* Icons */}
         <div
           className="
-    flex min-h-[60px] flex-1
+    flex min-h-[60px] w-full flex-1
     items-center justify-center
+    overflow-hidden
     rounded-3xl border border-gray-200
-    p-6
-    sm:p-8
+    p-3
+    sm:p-4
     md:min-h-[320px]
+    md:p-8
     lg:min-h-[100px]
   "
         >
-          <img src={Icons} alt="Icons" className="sm:w-[400px] md:w-[500px] lg:w-[700px]  max-w-none" />
+          <img
+            src={Icons}
+            alt="Icons"
+            className="
+    h-auto
+    w-full
+    max-w-[280px]
+    object-contain
+    sm:max-w-[340px]
+    md:w-[500px]
+    md:max-w-none
+    lg:w-[700px]
+  "
+          />
         </div>
       </section>
     </main>
