@@ -108,7 +108,7 @@ router.put("/posts/:id/comments/edit", Auth, async (req, res) => {
     return res.status(500).json("internal server error");
   }
 });
-router.delete("/posts/:id/comments/:ids", Auth, async (req, res) => {
+router.delete("comments/:ids", Auth, async (req, res) => {
   try {
     const { ids } = req.params;
     const userId = req.user.id;
@@ -173,11 +173,12 @@ router.post("/follow/:followed_user", Auth, async (req, res) => {
   try {
     const { followed_user } = req.params;
     const follower = req.user.id;
-    if (followed_user === follower) {
-      return res
-        .status(400)
-        .json({ success: false, message: "invalid request" });
-    }
+      if (Number(followed_user) === follower) {
+        return res
+          .status(400)
+          .json({ success: false, message: "invalid request" });
+      }
+
     const CheckUserExist = await Pool.query(
       `
           SELECT * FROM users WHERE  id=$1
@@ -263,7 +264,12 @@ router.get("/post/:id/like", async (req, res) => {
 
     const GetAllLikes = await Pool.query(
       `
-       SELECT * FROM likes WHERE post_id=$1 
+      SELECT 
+      likes.user_id,comments.user_id,comments.content,comments.post_id
+      FROM likes
+      JOIN comments ON likes.post_id=comments.post_id
+      WHERE post_id=$1
+      GROUP BY
         `,
       [id]
     );
@@ -312,7 +318,7 @@ router.post("/post/:postId/like", Auth, async (req, res) => {
   }
 });
 
-router.delete("/post/:postId/like", Auth, async (req, res) => {
+router.delete("/pGost/:postId/like", Auth, async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user.id;
@@ -355,7 +361,7 @@ router.get("/feed", Auth, async (req, res) => {
 FROM posts
 JOIN follows ON posts.user_id = follows.followed_id
 JOIN users ON users.id = posts.user_id
-WHERE follows.follower_id = $
+WHERE follows.follower_id = $1
         `,
       [userId]
     );
@@ -377,4 +383,179 @@ WHERE follows.follower_id = $
  
 });
 
+
+router.get("/profile", Auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await Pool.query(
+      `SELECT
+         users.id,
+         users.username,
+         users.profile,
+         users.description,
+         COUNT(DISTINCT posts.id)          AS posts,
+         COUNT(DISTINCT f1.follower_id)    AS followers,
+         COUNT(DISTINCT f2.followed_id)    AS following,
+         MAX(s.handle) FILTER (WHERE s.platform = 'instagram') AS instagram,
+         MAX(s.handle) FILTER (WHERE s.platform = 'facebook')  AS facebook,
+         MAX(s.handle) FILTER (WHERE s.platform = 'telegram')  AS telegram
+       FROM users
+       LEFT JOIN posts        ON posts.user_id = users.id
+       LEFT JOIN follows f1   ON f1.followed_id = users.id
+       LEFT JOIN follows f2   ON f2.follower_id = users.id
+       LEFT JOIN social_links s ON s.user_id = users.id
+       WHERE users.id = $1
+       GROUP BY users.id`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "user not found" });
+    }
+
+    const latest = await Pool.query(
+      `SELECT posts.id, posts.content, posts.images, posts.created_at,
+              COUNT(likes.post_id) AS likes
+       FROM posts
+       LEFT JOIN likes ON likes.post_id = posts.id
+       WHERE posts.user_id = $1
+       GROUP BY posts.id
+       ORDER BY posts.created_at DESC
+       LIMIT 1`,
+      [userId]
+    );
+
+    const row = result.rows[0];
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...row,
+        posts: Number(row.posts),
+        followers: Number(row.followers),
+        following: Number(row.following),
+        latestPost: latest.rows[0] || null,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+router.put("/profile", Auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let { username, description } = req.body;
+
+    if (username !== undefined) {
+      username = username.trim();
+      if (username.length < 3 || username.length > 30) {
+        return res.status(400).json({
+          success: false,
+          message: "username must be 3 to 30 characters",
+        });
+      }
+
+      // username must not belong to someone else
+      const taken = await Pool.query(
+        `SELECT id FROM users WHERE username=$1 AND id<>$2`,
+        [username, userId]
+      );
+      if (taken.rows.length > 0) {
+        return res
+          .status(409)
+          .json({ success: false, message: "username already taken" });
+      }
+    }
+
+    if (description !== undefined && description.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: "description is limited to 200 characters",
+      });
+    }
+
+    const updated = await Pool.query(
+      `UPDATE users
+       SET username    = COALESCE($1, username),
+           description = COALESCE($2, description)
+       WHERE id = $3
+       RETURNING id, username, description, profile`,
+      [username ?? null, description ?? null, userId]
+    );
+
+    return res.status(200).json({ success: true, data: updated.rows[0] });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+const PLATFORMS = ["instagram", "facebook", "telegram"];
+
+router.post("/profile/social", Auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { platform, handle } = req.body;
+
+    if (!PLATFORMS.includes(platform)) {
+      return res.status(400).json({
+        success: false,
+        message: `platform must be one of: ${PLATFORMS.join(", ")}`,
+      });
+    }
+    if (!handle || !handle.trim() || handle.length > 100) {
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid handle" });
+    }
+
+    const saved = await Pool.query(
+      `INSERT INTO social_links (user_id, platform, handle)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, platform)
+       DO UPDATE SET handle = EXCLUDED.handle
+       RETURNING platform, handle`,
+      [userId, platform, handle.trim()]
+    );
+
+    return res.status(200).json({ success: true, data: saved.rows[0] });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+router.delete("/profile/social/:platform", Auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { platform } = req.params;
+
+    const removed = await Pool.query(
+      `DELETE FROM social_links WHERE user_id=$1 AND platform=$2 RETURNING platform`,
+      [userId, platform]
+    );
+
+    if (removed.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: `no ${platform} link found` });
+    }
+
+    return res.status(200).json({ success: true, message: "link removed" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+});
 export default router;
