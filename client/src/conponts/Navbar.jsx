@@ -1,6 +1,33 @@
+import { useState, useEffect } from "react";
+import { User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+
 const Navbar = () => {
+  // inside the Navbar component
+  const [scrolled, setScrolled] = useState(false);
+const { user, checkingAuth } = useAuth();
+const navigate = useNavigate();
+
+const handleProfileClick = () => {
+  if (checkingAuth) return; // /me hasn't answered yet
+  navigate(user ? "/user" : "/signup"); // logged in -> profile, guest -> login
+};
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll(); // set the right state on first load
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <nav className="w-full px-4 pt-4 sm:px-6 sm:pt-6 mb-7 lg:px-10">
+    <nav
+      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+        scrolled
+          ? "border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur"
+          : "border-b border-transparent bg-transparent"
+      }`}
+    >
       <div
         className="
           mx-auto flex max-w-7xl items-center justify-between
@@ -36,34 +63,38 @@ const Navbar = () => {
         </div>
 
         {/* User Profile */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          {/* User Name */}
-          <div
-            className="
-              text-sm font-medium text-gray-700
-              sm:text-base
-              lg:text-lg
-            "
-          >
-            Hey, User
-          </div>
+        <button
+          type="button"
+          onClick={handleProfileClick}
+          className="flex items-center gap-3"
+        >
+          <span className="text-sm font-medium text-gray-900 sm:text-base">
+            {user ? `Hey ${user.username}` : "Login"}
+          </span>
 
-          {/* Profile Image */}
           <div
             className="
-              h-9 w-9 overflow-hidden rounded-full
-              bg-gray-200 shadow-sm
-              sm:h-11 sm:w-11
-              lg:h-12 lg:w-12
-            "
+      flex h-9 w-9 items-center justify-center overflow-hidden rounded-full
+      bg-gray-200 shadow-sm
+      sm:h-11 sm:w-11
+      lg:h-12 lg:w-12
+    "
           >
-            <img
-              src=""
-              alt="User profile"
-              className="h-full w-full object-cover"
-            />
+            {user?.profile ? (
+              <img
+                src={user.profile}
+                alt={`${user.username} profile`}
+                className="h-full w-full object-cover"
+              />
+            ) : user?.username ? (
+              <span className="text-sm font-semibold text-gray-700 sm:text-base">
+                {user.username.charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <User className="h-5 w-5 text-gray-500 sm:h-6 sm:w-6" />
+            )}
           </div>
-        </div>
+        </button>
       </div>
     </nav>
   );
