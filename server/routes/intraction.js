@@ -78,37 +78,34 @@ router.post("/posts/:id/comments", Auth, async (req, res) => {
 
 //  the put is working put it need fix
 
-router.put("/posts/:id/comments/edit", Auth, async (req, res) => {
+router.put("/comments/:commentId/edit", Auth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const { commentId } = req.params;
     const UserId = req.user.id;
     const { content } = req.body;
-    if (content === "") {
+    if (!content || content.trim() === "") {
       return res
         .status(400)
         .json({ success: false, message: "invalid inputs" });
     }
     const updateComment = await Pool.query(
-      `UPDATE comments  SET content=$1  WHERE post_id=$2 AND user_id=$3 RETURNING *`,
-      [content, id, UserId]
+      `UPDATE comments SET content=$1 WHERE id=$2 AND user_id=$3 RETURNING *`,
+      [content, commentId, UserId]
     );
 
     if (updateComment.rows.length === 0) {
       return res
         .status(404)
-        .json({ success: false, message: "comment  does not exist" });
+        .json({ success: false, message: "comment does not exist" });
     }
 
-    return res.status(200).json({
-      success: true,
-      data: updateComment.rows[0],
-    });
+    return res.status(200).json({ success: true, data: updateComment.rows[0] });
   } catch (error) {
     console.log(error);
     return res.status(500).json("internal server error");
   }
 });
-router.delete("comments/:ids", Auth, async (req, res) => {
+router.delete("/comments/:ids", Auth, async (req, res) => {
   try {
     const { ids } = req.params;
     const userId = req.user.id;
@@ -269,7 +266,7 @@ router.get("/post/:id/like", async (req, res) => {
       FROM likes
       JOIN comments ON likes.post_id=comments.post_id
       WHERE post_id=$1
-      GROUP BY
+      GROUP BY follows.user_id
         `,
       [id]
     );
@@ -318,7 +315,7 @@ router.post("/post/:postId/like", Auth, async (req, res) => {
   }
 });
 
-router.delete("/pGost/:postId/like", Auth, async (req, res) => {
+router.delete("/post/:postId/like", Auth, async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user.id;
