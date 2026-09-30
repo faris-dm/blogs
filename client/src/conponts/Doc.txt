@@ -1,0 +1,15 @@
+
+
+ context allow  you to share som data betwween componts without to use  the props
+
+
+
+catching:
+means  able to use your dataagain that you prviously fetched
+mutation is request  that update or create server state
+
+
+react qury: aprotocol ccollection of hooks for fetching mutations and updatinf server side states
+
+
+mulation allowu to update,create dlete your server state

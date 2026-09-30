@@ -22,7 +22,7 @@ const handleProfileClick = () => {
 
   return (
     <nav
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-40 lg:px-15 md:px-8 px-5 transition-all duration-300 ${
         scrolled
           ? "border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur"
           : "border-b border-transparent bg-transparent"
