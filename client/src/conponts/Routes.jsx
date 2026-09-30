@@ -3,11 +3,11 @@ import Navbar from "./Navbar";
 import WavyBackground from "./Background";
 import Landing from "./Landing";
 import Signup from "./Signup";
-import Profile from "./profile";
 import NotFound from "./NotFound";
 import ProtectedRoute from "./Protected";
 import Splash from "./Splash";
 import Footer from "./Footer.jsx";
+import Profile from "./Profile";
 
 import Idea from "./Idea";
 import "../App.css";
@@ -51,6 +51,7 @@ function AppRoute() {
         element={
           <ProtectedRoute>
             <WavyBackground>
+              <Navbar />
               <Profile />
               <Footer />
             </WavyBackground>
