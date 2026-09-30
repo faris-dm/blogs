@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrowserRouter, Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 import AppRoute from "./conponts/Routes";
 import { AuthProvider } from "./conponts/AuthContext";
