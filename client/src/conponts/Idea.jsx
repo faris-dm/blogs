@@ -673,7 +673,7 @@ function Idea() {
                     className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100"
                   >
                     <FaShare className="h-4 w-4" />
-                    <span>Share</span>
+                    <span>Share </span>
                   </button>
                 </div>
 
@@ -989,19 +989,19 @@ function Idea() {
                     {/* SHARE */}
                     <button
                       type="button"
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator
-                            .share({
-                              title: "QUILog post",
-                              text: post.content || "Check out this post",
-                              url: window.location.href,
-                            })
-                            .catch(() => {});
-                        } else {
-                          navigator.clipboard?.writeText(window.location.href);
-                        }
-                      }}
+                      // onClick={() => {
+                      //   if (navigator.share) {
+                      //     navigator
+                      //       .share({
+                      //         title: "QUILog post",
+                      //         text: post.content || "Check out this post",
+                      //         url: window.location.href,
+                      //       })
+                      //       .catch(() => {});
+                      //   } else {
+                      //     navigator.clipboard?.writeText(window.location.href);
+                      //   }
+                      // }}
                       className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-gray-600 transition hover:bg-gray-100"
                     >
                       <FaShare className="h-4 w-4" />
