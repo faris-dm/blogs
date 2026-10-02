@@ -34,15 +34,15 @@ export default function Landing() {
       lg:h-10
       text-left
       font-poppins
-      text-2xl
+      text-xl
       font-semibold
       leading-[1.3]
       tracking-[-0.05em]
       text-black
-      sm:text-4xl
-      md:text-5xl
-      lg:text-6xl
-      xl:text-7xl
+      sm:text-xl
+      md:text-3xl
+      lg:text-4xl
+      xl:text-6xl pb-10
     "
         >
           <span className="whitespace-nowrap pb-1">
@@ -143,9 +143,9 @@ export default function Landing() {
     max-w-[280px]
     object-contain
     sm:max-w-[340px]
-    md:w-[500px]
+    md:w-[400px]
     md:max-w-none
-    lg:w-[700px]
+    lg:w-[500px]
   "
           />
         </div>
