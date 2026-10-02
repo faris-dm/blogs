@@ -1,5 +1,5 @@
 import Icons from "../assets/icons.svg";
-import Navbar from "./Navbar";
+
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
@@ -39,7 +39,7 @@ export default function Landing() {
       leading-[1.3]
       tracking-[-0.05em]
       text-black
-      sm:text-xl
+      sm:text-2xl
       md:text-3xl
       lg:text-4xl
       xl:text-6xl pb-10
@@ -59,13 +59,13 @@ export default function Landing() {
   md:flex-row md:items-center md:gap-20 lg:gap-80"
       >
         {/* Buttons */}
-        <div className="flex w-full max-w-sm flex-col gap-4 md:w-[40%] md:max-w-xs">
+        <div className="flex w-full max-w-sm flex-col gap-4  md:w-[40%] md:max-w-xs">
           {/* Create Blog */}
           <button
             className="
-              group flex w-full gap-5 items-center 
+              group flex w-full sm:w-70 gap-5 items-center 
               rounded-2xl border border-gray-300
-              bg-gray-200 px-5 py-4
+              bg-gray-200 px-5 py-4  sm:py-2  
               text-base font-medium text-black
               transition-all duration-300
               hover:-translate-y-1
@@ -88,9 +88,9 @@ export default function Landing() {
           <button
             onClick={() => navigate("/post")}
             className="
-              group flex w-70 items-center gap-5
+              group flex w-70 sm:w-50  items-center gap-5
               rounded-2xl border border-gray-300
-              bg-white px-5 py-4
+              bg-white px-5 py-4 sm:py-3
               text-base font-medium text-black
               transition-all duration-300
               hover:-translate-y-1
