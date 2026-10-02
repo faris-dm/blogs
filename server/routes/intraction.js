@@ -17,7 +17,11 @@ router.get("/posts/:id/comments", async (req, res) => {
       });
     }
     const GetPostid = await Pool.query(
-      ` SELECT *  FROM  comments  WHERE post_id=$1 `,
+      `SELECT users.username,users.id,comments.post_id,comments.content,comments.created_at
+      FROM users
+      JOIN comments ON users.id=comments.user_id
+      WHERE comments.post_id=$1
+      ORDER BY  comments.created_at`,
       [id]
     );
     const rows = GetPostid.rows.length;
@@ -55,7 +59,9 @@ router.post("/posts/:id/comments", Auth, async (req, res) => {
     );
 
     if (checkPostExist.rows.length === 0) {
-      return res.status(400).json({ success: false, message: " post does not exits" });
+      return res
+        .status(400)
+        .json({ success: false, message: " post does not exits" });
     }
 
     const addComment = await Pool.query(
@@ -170,11 +176,11 @@ router.post("/follow/:followed_user", Auth, async (req, res) => {
   try {
     const { followed_user } = req.params;
     const follower = req.user.id;
-      if (Number(followed_user) === follower) {
-        return res
-          .status(400)
-          .json({ success: false, message: "invalid request" });
-      }
+    if (Number(followed_user) === follower) {
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid request" });
+    }
 
     const CheckUserExist = await Pool.query(
       `
@@ -248,7 +254,7 @@ router.delete("/unfollow/:followedUser", Auth, async (req, res) => {
   }
 });
 
-router.get("/post/:id/like", async (req, res) => {
+router.get("/posts/:id/like", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -262,11 +268,11 @@ router.get("/post/:id/like", async (req, res) => {
     const GetAllLikes = await Pool.query(
       `
       SELECT 
-      likes.user_id,comments.user_id,comments.content,comments.post_id
+      likes.user_id,likes.post_id,posts.user_id,posts.content
       FROM likes
-      JOIN comments ON likes.post_id=comments.post_id
-      WHERE post_id=$1
-      GROUP BY follows.user_id
+      JOIN posts ON likes.post_id=posts.id
+      WHERE likes.post_id=$1
+     
         `,
       [id]
     );
@@ -289,7 +295,7 @@ router.get("/post/:id/like", async (req, res) => {
   }
 });
 
-router.post("/post/:postId/like", Auth, async (req, res) => {
+router.post("/posts/:postId/like", Auth, async (req, res) => {
   try {
     const { postId } = req.params;
     const UserId = req.user.id;
@@ -347,7 +353,6 @@ router.delete("/post/:postId/like", Auth, async (req, res) => {
 });
 // @import "tailwindcss";
 
-
 // feed need some fix
 router.get("/feed", Auth, async (req, res) => {
   try {
@@ -363,23 +368,21 @@ WHERE follows.follower_id = $1
       [userId]
     );
 
-    if(selectJoinTable.rows.length===0) {
-        return res.status(200).json({success:true,message:"no post from ur followers"})
+    if (selectJoinTable.rows.length === 0) {
+      return res
+        .status(200)
+        .json({ success: true, message: "no post from ur followers" });
     }
-     return res.status(200).json({
-       success: true,
-       message: "done showing your feed",
-       data: selectJoinTable.rows,
-     });
-
+    return res.status(200).json({
+      success: true,
+      message: "done showing your feed",
+      data: selectJoinTable.rows,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json("Intrnal Server error");
   }
-
- 
 });
-
 
 router.get("/profile", Auth, async (req, res) => {
   try {
@@ -408,7 +411,9 @@ router.get("/profile", Auth, async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: "user not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "user not found" });
     }
 
     const latest = await Pool.query(
@@ -437,7 +442,9 @@ router.get("/profile", Auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 });
 
@@ -492,7 +499,6 @@ router.put("/profile", Auth, async (req, res) => {
   }
 });
 
-
 const PLATFORMS = ["instagram", "facebook", "telegram"];
 
 router.post("/profile/social", Auth, async (req, res) => {
@@ -529,7 +535,6 @@ router.post("/profile/social", Auth, async (req, res) => {
       .json({ success: false, message: "Internal server error" });
   }
 });
-
 
 router.delete("/profile/social/:platform", Auth, async (req, res) => {
   try {
