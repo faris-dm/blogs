@@ -161,24 +161,40 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="min-h-screen pt-20 sm:pt-24  w-full  px-4 py-6 sm:px-6 sm:py-8 md:px-10 lg:px-20">
+    <main
+      className="
+    min-h-screen
+    w-full
+    px-3
+    py-6
+    pt-20
+    sm:px-5
+    sm:py-8
+    sm:pt-24
+    md:px-10
+    lg:px-20
+  "
+    >
       <div
         className="
-        
-          mx-auto
-          flex
-          w-full
-          max-w-6xl
-          flex-col
-          gap-8
-          bg-white
- rounded-xl
-          md:flex-row
-          md:items-center
-          md:gap-8
-
-          lg:gap-10
-        "
+      mx-auto
+      flex
+      w-full
+      max-w-6xl
+      flex-col
+      gap-6
+      overflow-hidden
+      rounded-xl
+      bg-white
+      px-1
+      sm:gap-8
+      sm:px-2
+      md:flex-row
+      md:items-center
+      md:gap-8
+      md:px-0
+      lg:gap-10
+    "
       >
         {/* =========================================
             FORM
@@ -186,19 +202,22 @@ export default function AuthPage() {
 
         <section
           className="
-            flex
-            w-full
-            items-center
-            justify-center
-            py-6
-
-            sm:py-8
-
-            md:w-1/2
-            md:py-10
-          "
+    flex
+    w-full
+    min-w-0
+    items-center
+    justify-center
+    px-2
+    py-5
+    sm:px-4
+    sm:py-8
+    md:w-1/2
+    md:px-6
+    md:py-10
+    lg:px-8
+  "
         >
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md min-w-0">
             {/* TITLE */}
 
             <div className="mb-8">
