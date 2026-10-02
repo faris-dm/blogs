@@ -8,6 +8,7 @@ import ProtectedRoute from "./Protected";
 import Splash from "./Splash";
 import Footer from "./Footer.jsx";
 import Profile from "./User.jsx";
+import Loading from "./Loading.jsx";
 
 import Idea from "./Idea";
 import "../App.css";

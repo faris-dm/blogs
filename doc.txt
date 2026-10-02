@@ -159,3 +159,9 @@ After writing
 Re-read the exact lines flagged as wrong before, not just the new code. Old fixes get lost if you don't verify them.
 Does every response have the same shape ({ success, message, data })? Consistency matters for the frontend.
 Did you actually test it, or does it just "look right"? Run it, check real output, check the database directly.
+
+
+
+
+  this is the fllow of the code,
+   the mochcomments are stattix comments  done like real comments iwhich are in the  from the back
