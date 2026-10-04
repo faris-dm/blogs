@@ -656,7 +656,7 @@ function Idea() {
                     type="button"
                     onClick={() => {
                       setOpenCommentsPostId((currentId) =>
-                        currentId === post.post_id ? null : post.id
+                        currentId === post.id ? null : post.id
                       );
                     }}
                     className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100"
@@ -664,7 +664,7 @@ function Idea() {
                     <FaRegComment className="h-4 w-4" />
                     <span>Comment</span>
                     <span className="text-xs text-gray-400">
-                      {(commentsByPost[post.post_id] || []).length}
+                      {(commentsByPost[post.id] || []).length}
                     </span>
                   </button>
 
@@ -975,7 +975,7 @@ function Idea() {
                     {/* COMMENT TOGGLE */}
                     <button
                       type="button"
-                      onClick={() => toggleComments(post.post_id)}
+                      onClick={() => toggleComments(post.id)}
                       aria-expanded={openCommentsPostId === post.id}
                       className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-gray-600 transition hover:bg-gray-100"
                     >
@@ -1010,7 +1010,7 @@ function Idea() {
                   </div>
 
                   {/* COMMENTS PANEL */}
-                  {openCommentsPostId === post.post_id && (
+                  {openCommentsPostId === post.id && (
                     <section className="mt-3 rounded-xl border border-gray-100 bg-gray-50 p-3 sm:p-4">
                       <div className="mb-4 flex items-center justify-between">
                         <h4 className="text-sm font-semibold text-gray-800">
@@ -1043,7 +1043,7 @@ function Idea() {
                       {/* COMMENT LIST */}
                       {!commentsLoading[post.id] && (
                         <div className="max-h-72 space-y-4 overflow-y-auto">
-                          {(commentsByPost[post.post_id] || []).length === 0 ? (
+                          {(commentsByPost[post.id] || []).length === 0 ? (
                             <p className="py-4 text-center text-sm text-gray-500">
                               No comments yet. Be the first to comment.
                             </p>
@@ -1093,9 +1093,9 @@ function Idea() {
                       {/* WRITE COMMENT */}
                       <div className="mt-4 border-t border-gray-200 pt-3">
                         <textarea
-                          value={commentInputs[post.post_id] || ""}
+                          value={commentInputs[post.id] || ""}
                           onChange={(e) =>
-                            handleCommentInput(post.post_id, e.target.value)
+                            handleCommentInput(post.id, e.target.value)
                           }
                           rows={2}
                           placeholder="Write a comment..."
