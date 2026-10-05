@@ -9,15 +9,12 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 // --------------------------------------------------
 
 async function loginRequest(data) {
-  const res = await fetch(
-    "https://personal-blog-mv8w.onrender.com//api/login",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(data),
-    }
-  );
+  const res = await fetch("https://personal-blog-mv8w.onrender.com/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
 
   const json = await res.json();
 
@@ -30,7 +27,7 @@ async function loginRequest(data) {
 
 async function Register(data) {
   const Response = await fetch(
-    "https://personal-blog-mv8w.onrender.com//api/signup",
+    "https://personal-blog-mv8w.onrender.com/api/signup",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

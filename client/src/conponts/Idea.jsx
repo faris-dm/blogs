@@ -78,7 +78,9 @@ function Idea() {
         return res.json();
       })
       .then((json) => {
+        console.log(json.data[0]);
         setPosts(json.data);
+        
         setLoading(false);
       })
       .catch((err) => {
