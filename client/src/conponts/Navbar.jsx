@@ -2,17 +2,17 @@ import { useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-
+import { Link } from "react-router-dom";
 const Navbar = () => {
   // inside the Navbar component
   const [scrolled, setScrolled] = useState(false);
-const { user, checkingAuth } = useAuth();
-const navigate = useNavigate();
+  const { user, checkingAuth } = useAuth();
+  const navigate = useNavigate();
 
-const handleProfileClick = () => {
-  if (checkingAuth) return; // /me hasn't answered yet
-  navigate(user ? "/user" : "/signup"); // logged in -> profile, guest -> login
-};
+  const handleProfileClick = () => {
+    if (checkingAuth) return; // /me hasn't answered yet
+    navigate(user ? "/user" : "/signup"); // logged in -> profile, guest -> login
+  };
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll(); // set the right state on first load
@@ -61,6 +61,14 @@ const handleProfileClick = () => {
             QUILog
           </div>
         </div>
+        {/* <Link
+          to="/post"
+          className="ml-6 relative text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-900 sm:text-base
+    after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-gray-900 after:transition-all after:duration-300
+    hover:after:w-full"
+        >
+          Home
+        </Link> */}
 
         {/* User Profile */}
         <button
@@ -69,7 +77,7 @@ const handleProfileClick = () => {
           className="flex items-center gap-3"
         >
           <span className="text-sm font-medium text-gray-900 sm:text-base">
-            {user ? `Hey ${user.username}` : "Login"}
+            {user ? `Hey user` : "Login"}
           </span>
 
           <div
