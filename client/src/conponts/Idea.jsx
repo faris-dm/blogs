@@ -256,36 +256,36 @@ function Idea() {
     loadInteractions();
   }, []);
 
-  async function toggleComments(postId) {
-    // Clicking the same post's comment icon closes its panel.
-    if (openCommentsPostId === postId) {
-      setOpenCommentsPostId(null);
-      return;
-    }
+  // async function toggleComments(postId) {
+  //   // Clicking the same post's comment icon closes its panel.
+  //   if (openCommentsPostId === postId) {
+  //     setOpenCommentsPostId(null);
+  //     return;
+  //   }
 
-    setOpenCommentsPostId(postId);
+  //   setOpenCommentsPostId(postId);
 
-    // Don't reload comments if we already have them.
-    if (commentsByPost[postId]) return;
+  //   // Don't reload comments if we already have them.
+  //   if (commentsByPost[postId]) return;
 
-    setCommentsLoading((prev) => ({ ...prev, [postId]: true }));
+  //   setCommentsLoading((prev) => ({ ...prev, [postId]: true }));
 
-    try {
-      const response = await postApi.getComments(postId);
+  //   try {
+  //     const response = await postApi.getComments(postId);
 
-      setCommentsByPost((prev) => ({
-        ...prev,
-        [postId]: response.data || [],
-      }));
-    } catch (error) {
-      setCommentErrors((prev) => ({
-        ...prev,
-        [postId]: "Could not load comments. Please try again.",
-      }));
-    } finally {
-      setCommentsLoading((prev) => ({ ...prev, [postId]: false }));
-    }
-  }
+  //     setCommentsByPost((prev) => ({
+  //       ...prev,
+  //       [postId]: response.data || [],
+  //     }));
+  //   } catch (error) {
+  //     setCommentErrors((prev) => ({
+  //       ...prev,
+  //       [postId]: "Could not load comments. Please try again.",
+  //     }));
+  //   } finally {
+  //     setCommentsLoading((prev) => ({ ...prev, [postId]: false }));
+  //   }
+  // }
 
   function handleCommentInput(postId, value) {
     setCommentInputs((prev) => ({
