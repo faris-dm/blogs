@@ -39,7 +39,7 @@ function Idea() {
 
   // Controls preview
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const Api_url = "http://localhost:2019";
+  const Api_url = "https://personal-blog-mv8w.onrender.com";
 
   // New post data
   const [newPost, setNewPost] = useState({
@@ -372,7 +372,7 @@ function Idea() {
     setIsPreviewing(true);
   };
 
-  // =========================
+  // =================idea========
   // CONFIRM POST
   // =========================
 

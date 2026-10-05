@@ -7,7 +7,9 @@ export function AuthProvider({ children }) {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:2019/api/me", { credentials: "include" })
+    fetch("https://personal-blog-mv8w.onrender.com/api/me", {
+      credentials: "include",
+    })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((json) => setUser(json.user))
       .catch(() => setUser(null))

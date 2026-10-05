@@ -8,12 +8,11 @@ import Pool from "../config/db.js";
 router.use(express.urlencoded({ extended: true }));
 router.use(cookieParser());
 router.use(express.json());
-import auth from "../middle/auth.js"
+import auth from "../middle/auth.js";
 
 router.get("/me", auth, (req, res) => {
   return res.status(200).json({ success: true, user: req.user });
 });
-
 
 const secret = process.env.AccessSecret;
 const refreshSecret = process.env.refreshSecret;
@@ -64,15 +63,15 @@ router.post("/signup", async (req, res) => {
 
     res.cookie("token", accesTokens, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshTokens, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -130,14 +129,14 @@ router.post("/login", async (req, res) => {
 
     res.cookie("token", accessTokns, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 60 * 1000,
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -157,110 +156,6 @@ router.post("/login", async (req, res) => {
     return res.status(500).json("server failed");
   }
 });
-
-// router.post("/logout", async (req, res) => {
-//   try {
-//     const { refreshToken, token } = req.cookies;
-
-//     if (!refreshToken) {
-//       return res.status(400).json({ message: "Refresh token is required." });
-//     }
-
-//     const DeleteFresh = await Pool.query(
-//       ` SELECT * FROM refresh_tokens  WHERE token=$1`,
-//       [refreshToken]
-//     );
-//     if (DeleteFresh.rows.length === 0) {
-//       return res.status(404).json("refresh token does not in the database");
-//     }
-//     const realDelete = await Pool.query(
-//       ` DELETE FROM refresh_tokens WHERE token =$1  RETURNING * `,
-//       [refreshToken]
-//     );
-
-//     res.clearCookie("token", {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//     });
-//     res.clearCookie("refreshToken", {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//     });
-
-//     return res.status(200).json({ message: "Logged out successfully." });
-//   } catch (error) {
-//     console.error("Logout error:", error);
-//     return res.status(500).json({ message: "Internal server error." });
-//   }
-// });
-
-// router.post("/refresh-token", async (req, res) => {
-//   try {
-//     const refreshToken = req.cookies?.refreshToken;
-
-//     if (!refreshToken) {
-//       return res
-//         .status(401)
-//         .json({ success: false, message: "No refresh token provided" });
-//     }
-
-//     // Step 1: check the signature itself is valid and not expired
-//     jwt.verify(
-//       refreshToken,
-//       process.env.refreshSecret,
-//       async (err, decoded) => {
-//         if (err) {
-//           return res.status(403).json({
-//             success: false,
-//             message: "Invalid or expired refresh token",
-//           });
-//         }
-
-//         const dbCheck = await Pool.query(
-//           "SELECT * FROM refresh_tokens WHERE token = $1 AND user_id = $2",
-//           [refreshToken, decoded.id]
-//         );
-
-//         if (dbCheck.rows.length === 0) {
-//           return res
-//             .status(403)
-//             .json({ success: false, message: "Refresh token not recognized" });
-//         }
-
-//         // Pull fresh user info in case role/email changed since the token was issued
-//         const userQuery = await Pool.query(
-//           "SELECT id, email FROM users WHERE id = $1",
-//           [decoded.id]
-//         );
-//         const user = userQuery.rows[0];
-
-//         // Issue ONLY a new access token — the refresh token stays as-is
-//         const newAccessToken = generateAccess({
-//           id: user.id,
-//           email: user.email,
-//         });
-
-//         res.cookie("token", newAccessToken, {
-//           httpOnly: true,
-//           secure: false,
-//           sameSite: "lax",
-//           maxAge: 15 * 60 * 1000,
-//         });
-
-//         return res
-//           .status(200)
-//           .json({ success: true, message: "Access token refreshed" });
-//       }
-//     );
-//   } catch (error) {
-//     console.error("Refresh Token Error:", error);
-//     return res
-//       .status(500)
-//       .json({ success: false, message: "Internal server error" });
-//   }
-// });
 
 router.post("/logout", async (req, res) => {
   try {
@@ -289,13 +184,13 @@ router.post("/logout", async (req, res) => {
 
     res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
     });
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
     });
 
     return res
@@ -346,8 +241,8 @@ router.post("/refresh-token", async (req, res) => {
 
       res.cookie("token", newAccessToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
         maxAge: 15 * 60 * 1000,
       });
 

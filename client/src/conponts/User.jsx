@@ -12,7 +12,7 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
-  const Api_url = "http://localhost:2019";
+  const Api_url = "https://personal-blog-mv8w.onrender.com/";
 
   const [editForm, setEditForm] = useState({
     username: "",

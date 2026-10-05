@@ -9,12 +9,15 @@ import { useAuth } from "./AuthContext";
 // --------------------------------------------------
 
 async function loginRequest(data) {
-  const res = await fetch("http://localhost:2019/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // required so the browser stores the cookies your backend sets
-    body: JSON.stringify(data),
-  });
+  const res = await fetch(
+    "https://personal-blog-mv8w.onrender.com//api/login",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // required so the browser stores the cookies your backend sets
+      body: JSON.stringify(data),
+    }
+  );
 
   const json = await res.json();
 
@@ -27,12 +30,15 @@ async function loginRequest(data) {
 }
 
 async function Register(data) {
-  const Response = await fetch(`http://localhost:2019/api/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
+  const Response = await fetch(
+    `https://personal-blog-mv8w.onrender.com//api/signup`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(data),
+    }
+  );
 
   const json = await Response.json();
 
