@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import Icons from "../assets/icons.svg";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 // --------------------------------------------------
-// MOCK API
-// Replace this later with your real backend request
+// API
 // --------------------------------------------------
 
 async function loginRequest(data) {
@@ -14,7 +14,7 @@ async function loginRequest(data) {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // required so the browser stores the cookies your backend sets
+      credentials: "include",
       body: JSON.stringify(data),
     }
   );
@@ -22,16 +22,15 @@ async function loginRequest(data) {
   const json = await res.json();
 
   if (!res.ok) {
-    // your backend sends plain strings on error, e.g. "incorrect inputs "
     throw new Error(typeof json === "string" ? json : "Login failed");
   }
 
-  return json; // { success, message, user }
+  return json;
 }
 
 async function Register(data) {
   const Response = await fetch(
-    `https://personal-blog-mv8w.onrender.com//api/signup`,
+    "https://personal-blog-mv8w.onrender.com//api/signup",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -55,6 +54,7 @@ async function Register(data) {
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
+
   const Location = useLocation();
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -71,6 +71,10 @@ export default function AuthPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // --------------------------------------------------
   // INPUT CHANGE
@@ -94,7 +98,6 @@ export default function AuthPage() {
 
     setError("");
 
-    // Basic register validation
     if (!isLogin) {
       if (formData.password !== formData.confirmPassword) {
         setError("Passwords do not match.");
@@ -115,12 +118,16 @@ export default function AuthPage() {
           email: formData.email,
           password: formData.password,
         };
+
         const result = await loginRequest(loginData);
+
         setUser(result.user);
         console.log(result);
-        navigate(Location.state?.from || "/post", { replace: true });
+
+        navigate(Location.state?.from || "/post", {
+          replace: true,
+        });
       } else {
-        // Data that will eventually go to your register API
         const registerData = {
           username: formData.username,
           email: formData.email,
@@ -132,10 +139,11 @@ export default function AuthPage() {
         console.log(result);
         setUser(result.user);
 
-        navigate(Location.state?.from || "/post", { replace: true });
+        navigate(Location.state?.from || "/post", {
+          replace: true,
+        });
       }
 
-      // Clear form after successful request
       setFormData({
         username: "",
         email: "",
@@ -164,104 +172,132 @@ export default function AuthPage() {
       password: "",
       confirmPassword: "",
     });
+
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  }
+
+  // --------------------------------------------------
+  // BACK BUTTON
+  // --------------------------------------------------
+
+  function handleBack() {
+    navigate(-1);
   }
 
   return (
     <main
       className="
-    min-h-screen
-    w-full
-    px-3
-    py-6
-    pt-20
-    sm:px-5
-    sm:py-8
-    sm:pt-24
-    md:px-10
-    lg:px-20
-  "
+        flex
+        w-full
+        justify-center
+        px-4
+        py-6
+        sm:px-6
+        sm:py-8
+        md:px-8
+        md:py-10
+        lg:px-0
+        sm:mt-20
+        md:mt-17
+        lg:mt-20
+      "
     >
+      {/* Smaller centered auth card */}
       <div
         className="
-      mx-auto
-      flex
-      w-full
-      max-w-6xl
-      flex-col
-      gap-6
-      overflow-hidden
-      rounded-xl
-      bg-white
-      px-1
-      sm:gap-8
-      sm:px-2
-      md:flex-row
-      md:items-center
-      md:gap-8
-      md:px-0
-      lg:gap-10
-    "
+          flex
+          w-full
+          max-w-md
+          overflow-hidden
+          rounded-2xl
+          bg-white
+          md:max-w-2xl
+          lg:max-w-3xl
+          xl:max-w-3xl
+          md:border
+          md:border-neutral-200
+          md:shadow-sm
+        "
       >
-        {/* =========================================
-            FORM
-        ========================================= */}
+        {/* FORM SECTION */}
 
         <section
           className="
-    flex
-    w-full
-    min-w-0
-    items-center
-    justify-center
-    px-2
-    py-5
-    sm:px-4
-    sm:py-8
-    md:w-1/2
-    md:px-6
-    md:py-10
-    lg:px-8
-  "
+            flex
+            w-full
+            items-center
+            justify-center
+            px-2
+            py-4
+            sm:px-6
+            sm:py-6
+            md:w-1/2
+            md:px-7
+            md:py-8
+            lg:px-8
+            lg:py-9
+          "
         >
-          <div className="w-full max-w-md min-w-0">
+          <div className="w-full max-w-sm">
+            {/* BACK BUTTON */}
+
+            <div className="mb-4 md:mb-5">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="
+                  inline-flex
+                  items-center
+                  gap-2
+                  rounded-lg
+                  px-2
+                  py-1.5
+                  text-sm
+                  font-medium
+                  text-neutral-600
+                  transition
+                  hover:bg-neutral-100
+                  hover:text-neutral-900
+                  active:scale-95
+                "
+              >
+                <span className="text-lg leading-none">←</span>
+                <span>Back</span>
+              </button>
+            </div>
+
             {/* TITLE */}
 
-            <div className="mb-8">
+            <div className="mb-5 md:mb-6">
               <h1
                 className="
-                  text-3xl
+                  text-2xl
                   font-black
                   uppercase
                   tracking-tight
                   text-neutral-900
-
-                  sm:text-4xl
+                  md:text-3xl
                 "
               >
                 {isLogin ? "Sign In" : "Create Account"}
               </h1>
 
-              {isLogin ? (
-                <p className="mt-2 text-sm text-neutral-500 sm:text-base">
-                  Welcome back
-                </p>
-              ) : (
-                <p className="mt-2 text-sm text-neutral-500 sm:text-base">
-                  Create your account
-                </p>
-              )}
+              <p className="mt-1.5 text-sm text-neutral-500">
+                {isLogin ? "Welcome back" : "Create your account"}
+              </p>
             </div>
 
             {/* FORM */}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* USERNAME - REGISTER ONLY */}
+            <form onSubmit={handleSubmit} className="space-y-3.5 md:space-y-4">
+              {/* USERNAME */}
 
               {!isLogin && (
                 <div>
                   <label
                     htmlFor="username"
-                    className="mb-2 block text-sm font-medium text-neutral-700"
+                    className="mb-1 block text-sm font-medium text-neutral-700"
                   >
                     Username
                   </label>
@@ -276,12 +312,12 @@ export default function AuthPage() {
                     placeholder="Enter your username"
                     className="
                       w-full
-                      rounded-md
+                      rounded-lg
                       border
                       border-neutral-300
                       bg-white
-                      px-4
-                      py-3
+                      px-3
+                      py-2.5
                       text-sm
                       text-neutral-900
                       outline-none
@@ -300,7 +336,7 @@ export default function AuthPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-neutral-700"
+                  className="mb-1 block text-sm font-medium text-neutral-700"
                 >
                   Email
                 </label>
@@ -315,12 +351,12 @@ export default function AuthPage() {
                   placeholder="Enter your email"
                   className="
                     w-full
-                    rounded-md
+                    rounded-lg
                     border
                     border-neutral-300
                     bg-white
-                    px-4
-                    py-3
+                    px-3
+                    py-2.5
                     text-sm
                     text-neutral-900
                     outline-none
@@ -338,66 +374,29 @@ export default function AuthPage() {
               <div>
                 <label
                   htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-neutral-700"
+                  className="mb-1 block text-sm font-medium text-neutral-700"
                 >
                   Password
                 </label>
 
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter your password"
-                  className="
-                    w-full
-                    rounded-md
-                    border
-                    border-neutral-300
-                    bg-white
-                    px-4
-                    py-3
-                    text-sm
-                    text-neutral-900
-                    outline-none
-                    transition
-                    placeholder:text-neutral-400
-                    focus:border-neutral-900
-                    focus:ring-1
-                    focus:ring-neutral-900
-                  "
-                />
-              </div>
-
-              {/* CONFIRM PASSWORD */}
-
-              {!isLogin && (
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="mb-2 block text-sm font-medium text-neutral-700"
-                  >
-                    Confirm Password
-                  </label>
-
+                <div className="relative">
                   <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    value={formData.confirmPassword}
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
                     onChange={handleChange}
                     required
-                    placeholder="Confirm your password"
+                    placeholder="Enter your password"
                     className="
                       w-full
-                      rounded-md
+                      rounded-lg
                       border
                       border-neutral-300
                       bg-white
-                      px-4
-                      py-3
+                      px-3
+                      py-2.5
+                      pr-16
                       text-sm
                       text-neutral-900
                       outline-none
@@ -408,6 +407,91 @@ export default function AuthPage() {
                       focus:ring-neutral-900
                     "
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="
+                      absolute
+                      right-2
+                      top-1/2
+                      -translate-y-1/2
+                      rounded-md
+                      px-2
+                      py-1
+                      text-xs
+                      font-medium
+                      text-neutral-500
+                      hover:bg-neutral-100
+                      hover:text-neutral-900
+                    "
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              {/* CONFIRM PASSWORD */}
+
+              {!isLogin && (
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="mb-1 block text-sm font-medium text-neutral-700"
+                  >
+                    Confirm Password
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      placeholder="Confirm your password"
+                      className="
+                        w-full
+                        rounded-lg
+                        border
+                        border-neutral-300
+                        bg-white
+                        px-3
+                        py-2.5
+                        pr-16
+                        text-sm
+                        text-neutral-900
+                        outline-none
+                        transition
+                        placeholder:text-neutral-400
+                        focus:border-neutral-900
+                        focus:ring-1
+                        focus:ring-neutral-900
+                      "
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className="
+                        absolute
+                        right-2
+                        top-1/2
+                        -translate-y-1/2
+                        rounded-md
+                        px-2
+                        py-1
+                        text-xs
+                        font-medium
+                        text-neutral-500
+                        hover:bg-neutral-100
+                        hover:text-neutral-900
+                      "
+                    >
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -421,7 +505,7 @@ export default function AuthPage() {
                       className="h-4 w-4 accent-neutral-900"
                     />
 
-                    <span className="text-xs text-neutral-600 sm:text-sm">
+                    <span className="text-xs text-neutral-600">
                       Remember me
                     </span>
                   </label>
@@ -435,8 +519,6 @@ export default function AuthPage() {
                       underline
                       underline-offset-2
                       hover:text-neutral-900
-
-                      sm:text-sm
                     "
                   >
                     Forgot password?
@@ -446,7 +528,11 @@ export default function AuthPage() {
 
               {/* ERROR */}
 
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && (
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                  {error}
+                </p>
+              )}
 
               {/* SUBMIT */}
 
@@ -455,10 +541,10 @@ export default function AuthPage() {
                 disabled={loading}
                 className="
                   w-full
-                  rounded-md
+                  rounded-lg
                   bg-neutral-900
                   px-4
-                  py-3.5
+                  py-2.5
                   text-sm
                   font-semibold
                   uppercase
@@ -469,8 +555,6 @@ export default function AuthPage() {
                   active:scale-[0.99]
                   disabled:cursor-not-allowed
                   disabled:opacity-50
-
-                  sm:py-4
                 "
               >
                 {loading
@@ -485,7 +569,7 @@ export default function AuthPage() {
 
             {/* SWITCH LOGIN / REGISTER */}
 
-            <p className="mt-7 text-center text-sm text-neutral-600 sm:text-base">
+            <p className="mt-5 text-center text-sm text-neutral-600">
               {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
               <button
                 type="button"
@@ -504,39 +588,31 @@ export default function AuthPage() {
           </div>
         </section>
 
-        {/* =========================================
-            SVG / DESIGN
-            Hidden on mobile
-        ========================================= */}
+        {/* SVG SECTION - HIDDEN ON MOBILE */}
 
         <section
           className="
             hidden
-
             md:flex
-            md:min-h-[320px]
-            md:flex-1
+            md:w-1/2
             md:items-center
             md:justify-center
-            md:rounded-3xl
-            md:border
-            md:border-gray-200
-            md:p-6
-
-            lg:p-8
+            md:border-l
+            md:border-neutral-200
+            md:p-5
+            lg:p-7
           "
         >
           <div className="w-full text-center">
             <h2
               className="
                 font-poppins
-                text-4xl
+                text-3xl
                 font-semibold
-                leading-[1.3]
+                leading-tight
                 tracking-[-0.05em]
                 text-black
-
-                lg:text-5xl
+                lg:text-4xl
               "
             >
               Let's Blog it
@@ -547,11 +623,12 @@ export default function AuthPage() {
               alt="Blog illustration"
               className="
                 mx-auto
-                mt-6
+                mt-4
                 h-auto
                 w-full
-                max-w-[500px]
+                max-w-[280px]
                 object-contain
+                lg:max-w-[320px]
               "
             />
           </div>
