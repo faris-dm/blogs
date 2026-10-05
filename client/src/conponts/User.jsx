@@ -185,6 +185,7 @@ function Profile() {
 
                     {/* User information */}
                     <div className="min-w-0 flex-1">
+                      <p>{user.username}</p>
                       <p className="mt-2 max-w-md break-words text-sm leading-6 text-gray-600">
                         {user.description || "No description yet."}
                       </p>
