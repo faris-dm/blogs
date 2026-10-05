@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
       .then((json) => setUser(json.user))
       .catch(() => setUser(null))
       .finally(() => setCheckingAuth(false));
+    console.log("user object:", user);
   }, []);
 
   return (

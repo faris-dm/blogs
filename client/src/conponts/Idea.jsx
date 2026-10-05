@@ -235,7 +235,7 @@ function Idea() {
     },
   };
 
-  if (postError) return <div> Error geting the posts,{postError}</div>;
+  // if (postError) return <div> Error geting the posts,{postError}</div>;
 
   // Load likes and follows from the mock API
   useEffect(() => {
@@ -1105,8 +1105,16 @@ function Idea() {
                         <div className="mt-2 flex justify-end">
                           <button
                             type="button"
-                            onClick={() => handleConfirmComment(post.id)}
-                            disabled={!(commentInputs[post.id] || "").trim()}
+                            onClick={() => {
+                              if (!user) {
+                                navigate("/signup");
+                                return;
+                              }
+                              handleConfirmComment(post.id);
+                            }}
+                            disabled={
+                              !user || !(commentInputs[post.id] || "").trim()
+                            }
                             className="rounded-lg bg-gray-800 px-4 py-2 text-xs font-semibold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40 sm:text-sm"
                           >
                             Confirm

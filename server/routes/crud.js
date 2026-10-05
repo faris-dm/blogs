@@ -11,6 +11,9 @@ router.use(express.urlencoded({ extended: true }));
 
 // get  all the posts
 
+
+
+
 // ` SELECT *  FROM  posts  ORDER BY id DESC`
 router.get("/posts", async (req, res) => {
   try {
